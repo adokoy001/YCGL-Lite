@@ -7,6 +7,7 @@ use YCGL::Lite::Mailer;
 use YCGL::Lite::HTTPClient;
 use YCGL::Lite::DataConverter;
 use YCGL::Lite::Parallel;
+use YCGL::Lite::Plack;
 use Mouse;
 
 our $VERSION = "0.01";
@@ -16,6 +17,8 @@ has 'mail' => (is => 'rw', default => sub { YCGL::Lite::Mailer->new });
 has 'http_client' => (is => 'rw', default => sub { YCGL::Lite::HTTPClient->new });
 has 'data_conv' => (is => 'rw', default => sub { YCGL::Lite::DataConverter->new });
 has 'parallel' => (is => 'rw', default => sub { YCGL::Lite::Parallel->new });
+has 'plack' => (is => 'rw', default => sub { YCGL::Lite::Plack->new });
+
 
 __PACKAGE__->meta->make_immutable();
 
@@ -118,12 +121,7 @@ YCGL::Lite - Yokoda Common General Library lite.
     $ycgl->parallel->do_without_result($data_parallel_2, $my_sub_2, 20);
 
     ## Plack Server
-    my $responses = {
-        '/' => sub { return [500, ['Content-Type' => 'text/plain'],['Hello, World!']]; }
-    };
     my $public_dir = './public/';
-    $ycgl->plack->plackup_app($responses,$public_dir);
-
     $ycgl->plack->plackup_static($public_dir);
 
 

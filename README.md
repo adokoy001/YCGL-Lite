@@ -92,12 +92,7 @@ YCGL::Lite - Yokoda Common General Library lite.
     $ycgl->parallel->do_without_result($data_parallel_2, $my_sub_2, 20);
 
     ## Plack Server
-    my $responses = {
-        '/' => sub { return [500, ['Content-Type' => 'text/plain'],['Hello, World!']]; }
-    };
     my $public_dir = './public/';
-    $ycgl->plack->plackup_app($responses,$public_dir);
-
     $ycgl->plack->plackup_static($public_dir);
 
 # DESCRIPTION

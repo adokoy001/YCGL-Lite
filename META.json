@@ -49,6 +49,7 @@
             "Mouse" : "0",
             "Net::SMTP" : "0",
             "Parallel::ForkManager" : "0",
+            "Plack" : "0",
             "Text::CSV" : "0",
             "Time::HiRes" : "0",
             "WWW::Mechanize" : "0",
