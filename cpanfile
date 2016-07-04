@@ -10,7 +10,6 @@ requires 'JSON', '0';
 requires 'Text::CSV', '0';
 requires 'XML::Simple', '0';
 requires 'Data::MessagePack', '0';
-requires 'YAML::Tiny', '0';
 requires 'Plack', '0';
 
 on 'test' => sub {

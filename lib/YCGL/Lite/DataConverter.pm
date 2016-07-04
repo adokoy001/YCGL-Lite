@@ -7,7 +7,6 @@ use JSON;
 use Text::CSV;
 use XML::Simple;
 use Data::MessagePack;
-use YAML::Tiny;
 
 
 sub perl_to_json {
@@ -79,6 +78,48 @@ sub perl_to_csvfile {
 	$csv->print($fh,$data->[$k]);
     }
     close($fh);
+}
+
+sub perl_to_xml {
+    my $self = shift;
+    my $records = shift;
+    my $options = shift;
+    my $xml = XML::Simple->new(
+	ForceArray => $options->{ForceArray},
+	RootName => $options->{RootName},
+	XMLDecl => $options->{XMLDecl}
+       );
+    my $xml_out = $xml->XMLout($records);
+    return($xml_out);
+}
+
+sub xml_to_perl {
+    my $self = shift;
+    my $xml_text = shift;
+    my $options = shift;
+    my $xml = XML::Simple->new(
+	ForceArray => $options->{ForceArray},
+	RootName => $options->{RootName},
+	XMLDecl => $options->{XMLDecl}
+       );
+    my $perl_from_xml = $xml->XMLin($xml_text);
+    return($perl_from_xml);
+}
+
+sub perl_to_msgpack {
+    my $self = shift;
+    my $data = shift;
+    my $msgpack = Data::MessagePack->new();
+    my $packed = $msgpack->pack($data);
+    return($packed);
+}
+
+sub msgpack_to_perl {
+    my $self = shift;
+    my $msg_text = shift;
+    my $msgpack = Data::MessagePack->new();
+    my $unpacked = $msgpack->unpack($msg_text);
+    return($unpacked);
 }
 
 __PACKAGE__->meta->make_immutable();
