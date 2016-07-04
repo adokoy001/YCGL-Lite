@@ -1,0 +1,4 @@
+name = "YCGL-Lite"
+# badges = ["travis"]
+module_maker="ModuleBuildTiny"
+
