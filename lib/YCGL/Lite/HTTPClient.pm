@@ -44,6 +44,26 @@ sub post{
     return $res;
 }
 
+sub post_content {
+    my $self = shift;
+    my $url = shift;
+    my $content_type = shift;
+    my $data = shift;
+    my $options = shift;
+    my $ssl_opt = 1;
+    if(defined($options) and defined($options->{ssl_verify_hostname})){
+	$ssl_opt = $options->{ssl_verify_hostname};
+    }
+    my $mech = WWW::Mechanize->new(
+	ssl_opts => {
+	    verify_hostname => $ssl_opt
+	   }
+       );
+    $mech->post($url,'Content-Type' => $content_type, Content => $data);
+    my $res = $mech->content();
+    return $res;
+}
+
 __PACKAGE__->meta->make_immutable();
 
 1;

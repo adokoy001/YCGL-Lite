@@ -4,6 +4,9 @@ use warnings;
 use utf8;
 use Mouse;
 use Parallel::ForkManager;
+use YCGL::Lite::HTTPClient;
+use YCGL::Lite::DataConverter;
+use B::Deparse;
 
 sub do_with_result {
     my $self = shift;
@@ -51,6 +54,11 @@ sub map_reduce {
     my $mapper_ref = shift;
     my $reducer_ref = shift;
     my $max_proc = shift;
+    my $options = shift;
+    my $remote_flg = 0;
+    if(defined($options) and defined($options->{remote})){
+	$remote_flg = $options->{remote};
+    }
     my $result;
     my $pm = Parallel::ForkManager->new($max_proc);
     $pm->run_on_finish(
@@ -61,11 +69,33 @@ sub map_reduce {
 	    }
 	}
        );
-    for(my $k=0; $k <= $#$data; $k++){
-	$pm->start and next;
-	my $result_chil = $mapper_ref->($data->[$k]);
-	my $result_with_id = {id => $k, result => $result_chil};
-	$pm->finish(0,$result_with_id);
+    if($remote_flg == 1){
+	for(my $k=0; $k <= $#$data; $k++){
+	    $pm->start and next;
+	    my $stringified_code = B::Deparse->new->coderef2text($mapper_ref);
+	    my $payload = YCGL::Lite::DataConverter->perl_to_json(
+		{
+		    data => $data->[$k]->[0],
+		    code => $stringified_code
+		   }
+	       );
+	    my $result_chil_from_remote = YCGL::Lite::HTTPClient->post_content(
+		$data->[$k]->[1],
+		'application/json',
+		$payload
+	       );
+	    my $result_chil = YCGL::Lite::DataConverter->json_to_perl($result_chil_from_remote);
+	    
+	    my $result_with_id = {id => $k, result => $result_chil->{result}};
+	    $pm->finish(0,$result_with_id);
+	}
+    }else{
+	for(my $k=0; $k <= $#$data; $k++){
+	    $pm->start and next;
+	    my $result_chil = $mapper_ref->($data->[$k]);
+	    my $result_with_id = {id => $k, result => $result_chil};
+	    $pm->finish(0,$result_with_id);
+	}
     }
     $pm->wait_all_children;
     return($reducer_ref->($result));

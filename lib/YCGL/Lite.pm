@@ -163,8 +163,22 @@ YCGL::Lite - Yokoda Common General Library lite.
     print "SUM: $result->{sum}\nAVG: $result->{avg}\n";
 
     ## Plack Server
+    # static file server
     my $public_dir = './public/';
     $ycgl->plack->plackup_static($public_dir);
+
+    # eval server (dangerous)
+    my $eval_path = '/mysecret_eval_path';
+    $ycgl->plack->plackup_eval($eval_path);
+
+    use B::Deparse;
+    my $stringified_code = B::Deparse->new->coderef2text($mapper);
+    my $payload = $ycgl->data_conv->perl_to_json({data => $data_map_reduce, code => $stringified_code});
+    my $remote_result = $ycgl->http_client->post_content(
+        'http://localhost:5000/mysecret_eval_path',
+        'application/json',
+        $payload
+        );
 
 
 =head1 DESCRIPTION
