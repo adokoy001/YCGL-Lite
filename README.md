@@ -87,6 +87,52 @@ YCGL::Lite - Yokoda Common General Library lite.
     my $my_sub_2 = sub {my $url = shift; $ycgl->http_client->get($url);};
     $ycgl->parallel->do_without_result($data_parallel_2, $my_sub_2, 20);
 
+    ## MapReduce
+    # generating data
+    my $data_map_reduce;
+    for(0 .. 20){
+        my $tmp_data;
+        for(0 .. 10000){
+            push(@$tmp_data,rand(10000));
+        }
+        push(@$data_map_reduce,$tmp_data);
+    }
+
+    # mapper code
+    my $mapper = sub {
+        my $input = shift;
+        my $sum = 0;
+        my $num = $#$input + 1;
+        for(0 .. $#$input){
+            $sum += $input->[$_];
+        }
+        my $avg = $sum / $num;
+        return({avg => $avg, sum => $sum});
+    };
+
+    # reducer code
+    my $reducer = sub {
+        my $input = shift;
+        my $sum = 0;
+        my $avg = 0;
+        my $num = $#$input + 1;
+        for(0 .. $#$input){
+            $sum += $input->[$_]->{sum};
+            $avg += $input->[$_]->{avg};
+        }
+        $avg = $avg / $num;
+        return({avg => $avg, sum => $sum});
+    };
+
+    # do MapReduce
+    my $result = $ycgl->parallel->map_reduce(
+        $data,
+        $mapper,
+        $reducer,
+        10
+       );
+    print "SUM: $result->{sum}\nAVG: $result->{avg}\n";
+
     ## Plack Server
     my $public_dir = './public/';
     $ycgl->plack->plackup_static($public_dir);

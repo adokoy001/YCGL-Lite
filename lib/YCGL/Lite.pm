@@ -12,12 +12,12 @@ use Mouse;
 
 our $VERSION = "0.01";
 
-has 'times' => (is => 'rw', default => sub { YCGL::Lite::Times->new });
-has 'mail' => (is => 'rw', default => sub { YCGL::Lite::Mailer->new });
-has 'http_client' => (is => 'rw', default => sub { YCGL::Lite::HTTPClient->new });
-has 'data_conv' => (is => 'rw', default => sub { YCGL::Lite::DataConverter->new });
-has 'parallel' => (is => 'rw', default => sub { YCGL::Lite::Parallel->new });
-has 'plack' => (is => 'rw', default => sub { YCGL::Lite::Plack->new });
+has 'times' => (is => 'ro', default => sub { YCGL::Lite::Times->new });
+has 'mail' => (is => 'ro', default => sub { YCGL::Lite::Mailer->new });
+has 'http_client' => (is => 'ro', default => sub { YCGL::Lite::HTTPClient->new });
+has 'data_conv' => (is => 'ro', default => sub { YCGL::Lite::DataConverter->new });
+has 'parallel' => (is => 'ro', default => sub { YCGL::Lite::Parallel->new });
+has 'plack' => (is => 'ro', default => sub { YCGL::Lite::Plack->new });
 
 
 __PACKAGE__->meta->make_immutable();
@@ -116,10 +116,55 @@ YCGL::Lite - Yokoda Common General Library lite.
     my $my_sub_2 = sub {my $url = shift; $ycgl->http_client->get($url);};
     $ycgl->parallel->do_without_result($data_parallel_2, $my_sub_2, 20);
 
+    ## MapReduce
+    # generating data
+    my $data_map_reduce;
+    for(0 .. 20){
+        my $tmp_data;
+        for(0 .. 10000){
+            push(@$tmp_data,rand(10000));
+        }
+        push(@$data_map_reduce,$tmp_data);
+    }
+
+    # mapper code
+    my $mapper = sub {
+        my $input = shift;
+        my $sum = 0;
+        my $num = $#$input + 1;
+        for(0 .. $#$input){
+            $sum += $input->[$_];
+        }
+        my $avg = $sum / $num;
+        return({avg => $avg, sum => $sum});
+    };
+
+    # reducer code
+    my $reducer = sub {
+        my $input = shift;
+        my $sum = 0;
+        my $avg = 0;
+        my $num = $#$input + 1;
+        for(0 .. $#$input){
+            $sum += $input->[$_]->{sum};
+            $avg += $input->[$_]->{avg};
+        }
+        $avg = $avg / $num;
+        return({avg => $avg, sum => $sum});
+    };
+
+    # do MapReduce
+    my $result = $ycgl->parallel->map_reduce(
+        $data,
+        $mapper,
+        $reducer,
+        10
+       );
+    print "SUM: $result->{sum}\nAVG: $result->{avg}\n";
+
     ## Plack Server
     my $public_dir = './public/';
     $ycgl->plack->plackup_static($public_dir);
-
 
 
 =head1 DESCRIPTION
