@@ -54,7 +54,6 @@
             "Time::HiRes" : "0",
             "WWW::Mechanize" : "0",
             "XML::Simple" : "0",
-            "YAML::Tiny" : "0",
             "perl" : "5.008001"
          }
       },

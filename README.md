@@ -74,10 +74,6 @@ YCGL::Lite - Yokoda Common General Library lite.
     );
     my $perl_from_xml = $ycgl->data_conv->xml_to_perl($xml_text);
 
-    # YAML
-    my $yaml_text = $ycgl->data_conv->perl_to_yaml({name => 'myname', age => 20});
-    my $perl_from_yaml = $ycgl->data_conv->yaml_to_perl($yaml_text);
-
     # MessagePack
     my $msgpack_text = $ycgl->data_conv->perl_to_msgpack({name => 'myname', age => 20});
     my $perl_from_msgpack = $ycgl->data_conv->msgpack_to_perl($msgpack_text);
