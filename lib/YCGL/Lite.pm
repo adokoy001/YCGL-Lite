@@ -171,13 +171,22 @@ YCGL::Lite - Yokoda Common General Library lite.
     my $eval_path = '/mysecret_eval_path';
     $ycgl->plack->plackup_eval($eval_path);
 
-    use B::Deparse;
-    my $stringified_code = B::Deparse->new->coderef2text($mapper);
-    my $payload = $ycgl->data_conv->perl_to_json({data => $data_map_reduce, code => $stringified_code});
-    my $remote_result = $ycgl->http_client->post_content(
-        'http://localhost:5000/mysecret_eval_path',
-        'application/json',
-        $payload
+    my $data_map_reduce_real;
+    for(0 .. 2){
+        my $tmp_data;
+        for(0 .. 10000){
+            push(@$tmp_data,rand(10000));
+        }
+        push(@$data_map_reduce_real,[$tmp_data,'http://localhost:5000/mysecret_eval_path']);
+    }
+
+    # MapReduce by using remote eval servers
+    my $real_mapr_result = $ycgl->parallel->map_reduce(
+        $data_map_reduce_real,
+        $mapper,
+        $reducer,
+        3,
+        {remote => 1}
         );
 
 
